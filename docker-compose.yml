@@ -1,0 +1,13 @@
+services:
+  benchlib-agent:
+    image: benchlib/agent:latest
+    # build: .   # décommenter pour builder localement
+    container_name: benchlib-agent
+    restart: unless-stopped
+    ports:
+      - "${AGENT_PORT:-8090}:8090"
+    volumes:
+      - ./data:/data
+    environment:
+      - TZ=Europe/Paris
+    network_mode: host   # recommandé pour accéder à Plex/Navidrome en localhost

@@ -1,0 +1,45 @@
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Code coverage profiles and other test artifacts
+*.out
+coverage.*
+*.coverprofile
+profile.cov
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# env file
+.env
+
+# Editor/IDE
+.idea/
+.vscode/
+
+# BenchLib Agent — configs et données locales
+config.yaml
+*.yaml
+!**/testdata/**/*.yaml
+
+# Icône source (non nécessaire dans le repo, icon.go suffit)
+cmd/tray/icon.png
+
+# Builds locaux
+benchlib-agent.exe
+benchlib-agent-tray.exe
+dist/
