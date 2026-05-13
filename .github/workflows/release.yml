@@ -3,6 +3,8 @@ name: Build & Release
 on:
   push:
     branches: [main]
+    tags:
+      - "v*"
 
 permissions:
   contents: write
@@ -19,7 +21,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: "1.22"
 
       - name: Download dependencies
         run: go mod tidy
@@ -48,8 +50,9 @@ jobs:
             -o dist/benchlib-agent-tray-windows-amd64.exe \
             ./cmd/tray
 
-      # ── Release "latest" ─────────────────────────────────────────────────────
+      # ── Release "latest" (push sur main uniquement) ──────────────────────────
       - name: Update release "latest"
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
@@ -57,6 +60,26 @@ jobs:
           prerelease: true
           body: |
             Build automatique du dernier commit sur `main`.
+
+            | Fichier | Plateforme |
+            |---------|------------|
+            | `benchlib-agent-linux-amd64` | Linux x64 |
+            | `benchlib-agent-windows-amd64.exe` | Windows x64 (CLI) |
+            | `benchlib-agent-tray-windows-amd64.exe` | Windows x64 (systray) |
+          files: |
+            dist/benchlib-agent-linux-amd64
+            dist/benchlib-agent-windows-amd64.exe
+            dist/benchlib-agent-tray-windows-amd64.exe
+
+      # ── Release versionnée (tag v*) ───────────────────────────────────────────
+      - name: Create versioned release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          prerelease: false
+          body: |
+            ## BenchLib Agent ${{ github.ref_name }}
 
             | Fichier | Plateforme |
             |---------|------------|
