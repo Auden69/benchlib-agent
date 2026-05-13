@@ -24,7 +24,7 @@ Jusqu'ici, BenchLib scannait les bibliothèques depuis ses propres serveurs — 
 # docker-compose.yml
 services:
   benchlib-agent:
-    image: benchlib/agent:latest
+    image: ghcr.io/auden69/benchlib-agent:latest
     container_name: benchlib-agent
     restart: unless-stopped
     ports:
@@ -42,15 +42,26 @@ docker-compose up -d
 
 ### Windows — binaire avec icône systray
 
-Télécharge `benchlib-agent-tray.exe` depuis les [releases](https://github.com/Auden69/benchlib-agent/releases) et double-clique dessus.
+Télécharge `benchlib-agent-tray-windows-amd64.exe` depuis les [releases](https://github.com/Auden69/benchlib-agent/releases) et double-clique dessus.
 
 L'agent s'installe automatiquement au démarrage Windows (registre `HKCU\...\Run`) et apparaît dans la barre des tâches.
 
-### Windows / Linux / macOS — binaire CLI
+### Linux / macOS — binaire
+
+Télécharge le binaire depuis les [releases](https://github.com/Auden69/benchlib-agent/releases) :
 
 ```bash
-./benchlib-agent        # Linux / macOS
-.\benchlib-agent.exe    # Windows
+# Linux
+chmod +x benchlib-agent-linux-amd64
+./benchlib-agent-linux-amd64
+
+# macOS Intel
+chmod +x benchlib-agent-macos-amd64
+./benchlib-agent-macos-amd64
+
+# macOS Apple Silicon (M1/M2/M3)
+chmod +x benchlib-agent-macos-arm64
+./benchlib-agent-macos-arm64
 ```
 
 Interface disponible sur **http://localhost:8090**
@@ -71,18 +82,18 @@ L'agent embarque une interface complète accessible sur `http://localhost:8090` 
 
 ## Connecteurs disponibles
 
-| Connecteur     | Auth                | Bibliothèques         | Statut   |
-|----------------|---------------------|-----------------------|----------|
-| Plex           | Token Plex          | Films, Séries, Musique | ✅ Dispo  |
-| Navidrome      | Username / Password | Musique (Subsonic)    | ✅ Dispo  |
-| Audiobookshelf | Token               | Audiobooks            | 🔜 Planifié |
-| Komga          | Username / Password | BD, Mangas, Livres    | 🔜 Planifié |
+| Connecteur     | Auth                | Bibliothèques          | Statut      |
+| -------------- | ------------------- | ---------------------- | ----------- |
+| Plex           | Token Plex          | Films, Séries, Musique | ✅ Dispo    |
+| Navidrome      | Username / Password | Musique (Subsonic)     | ✅ Dispo    |
+| Audiobookshelf | Token               | Audiobooks             | 🔜 Planifié |
+| Komga          | Username / Password | BD, Mangas, Livres     | 🔜 Planifié |
 
 ---
 
 ## Configuration
 
-Générée automatiquement au premier lancement dans `%APPDATA%\BenchLib\config.yaml` (Windows) ou `./config.yaml` (Docker).
+Générée automatiquement au premier lancement dans `%APPDATA%\BenchLib\config.yaml` (Windows) ou `./data/config.yaml` (Docker).
 
 ```yaml
 benchlib_api_key: "bl_xxxxxxxxxxxxxxxxxxxx"
@@ -94,7 +105,7 @@ connectors:
   - type: plex
     name: Mon Plex
     url: http://192.168.1.100:32400
-    public_url: https://plex.mondomaine.com  # optionnel — active le monitoring uptime
+    public_url: https://plex.mondomaine.com # optionnel — active le monitoring uptime
     token: xxxxxxxxxxxxxxxxxxxx
     libraries:
       - id: "1"
@@ -109,16 +120,13 @@ L'URL de l'API BenchLib est embarquée dans le binaire. Elle peut être surcharg
 
 ## Compiler depuis les sources
 
-**Prérequis :** Go 1.22+
+**Prérequis :** Go 1.25+
 
 ```bash
 go mod tidy
 
 # Linux / macOS
 go build -ldflags="-s -w" -o benchlib-agent ./cmd/agent
-
-# Windows CLI
-GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o benchlib-agent.exe ./cmd/agent
 
 # Windows systray (sans fenêtre console)
 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w -H windowsgui" -o benchlib-agent-tray.exe ./cmd/tray
@@ -131,7 +139,7 @@ GOOS=windows GOARCH=amd64 go build -ldflags="-s -w -H windowsgui" -o benchlib-ag
 ```
 benchlib-agent/
 ├── cmd/
-│   ├── agent/        ← point d'entrée daemon (Docker / Linux / Windows CLI)
+│   ├── agent/        ← point d'entrée daemon (Docker / Linux / macOS)
 │   └── tray/         ← lanceur systray Windows (icône barre des tâches)
 ├── internal/
 │   ├── config/       ← struct Config, load/save config.yaml

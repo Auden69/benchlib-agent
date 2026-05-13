@@ -1,6 +1,6 @@
 services:
   benchlib-agent:
-    image: benchlib/agent:latest
+    image: ghcr.io/auden69/benchlib-agent:latest
     # build: .   # décommenter pour builder localement
     container_name: benchlib-agent
     restart: unless-stopped
@@ -10,4 +10,4 @@ services:
       - ./data:/data
     environment:
       - TZ=Europe/Paris
-    network_mode: host   # recommandé pour accéder à Plex/Navidrome en localhost
+    network_mode: host # recommandé pour accéder à Plex/Navidrome en localhost
