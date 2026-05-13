@@ -4,11 +4,11 @@ FROM golang:1.23-alpine AS builder
 RUN apk add --no-cache git
 
 WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build \
+
+RUN GOPROXY=https://proxy.golang.org,direct \
+    CGO_ENABLED=0 GOOS=linux go build \
     -ldflags="-s -w" \
     -o /benchlib-agent \
     ./cmd/agent
