@@ -6,6 +6,9 @@ on:
     tags:
       - "v*"
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: write
   packages: write
@@ -22,7 +25,8 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.25"
+          cache: false
 
       - name: Download dependencies
         run: go mod tidy
@@ -35,12 +39,19 @@ jobs:
             -o dist/benchlib-agent-linux-amd64 \
             ./cmd/agent
 
-      # ── Windows CLI ──────────────────────────────────────────────────────────
-      - name: Build Windows CLI (amd64)
+      # ── macOS ────────────────────────────────────────────────────────────────
+      - name: Build macOS (amd64)
         run: |
-          GOOS=windows GOARCH=amd64 go build \
+          GOOS=darwin GOARCH=amd64 go build \
             -ldflags="-s -w" \
-            -o dist/benchlib-agent-windows-amd64.exe \
+            -o dist/benchlib-agent-macos-amd64 \
+            ./cmd/agent
+
+      - name: Build macOS (arm64 — Apple Silicon)
+        run: |
+          GOOS=darwin GOARCH=arm64 go build \
+            -ldflags="-s -w" \
+            -o dist/benchlib-agent-macos-arm64 \
             ./cmd/agent
 
       # ── Windows Systray ──────────────────────────────────────────────────────
@@ -65,11 +76,13 @@ jobs:
             | Fichier | Plateforme |
             |---------|------------|
             | `benchlib-agent-linux-amd64` | Linux x64 |
-            | `benchlib-agent-windows-amd64.exe` | Windows x64 (CLI) |
+            | `benchlib-agent-macos-amd64` | macOS Intel |
+            | `benchlib-agent-macos-arm64` | macOS Apple Silicon (M1/M2/M3) |
             | `benchlib-agent-tray-windows-amd64.exe` | Windows x64 (systray) |
           files: |
             dist/benchlib-agent-linux-amd64
-            dist/benchlib-agent-windows-amd64.exe
+            dist/benchlib-agent-macos-amd64
+            dist/benchlib-agent-macos-arm64
             dist/benchlib-agent-tray-windows-amd64.exe
 
       # ── Release versionnée (tag v*) ───────────────────────────────────────────
@@ -85,11 +98,13 @@ jobs:
             | Fichier | Plateforme |
             |---------|------------|
             | `benchlib-agent-linux-amd64` | Linux x64 |
-            | `benchlib-agent-windows-amd64.exe` | Windows x64 (CLI) |
+            | `benchlib-agent-macos-amd64` | macOS Intel |
+            | `benchlib-agent-macos-arm64` | macOS Apple Silicon (M1/M2/M3) |
             | `benchlib-agent-tray-windows-amd64.exe` | Windows x64 (systray) |
           files: |
             dist/benchlib-agent-linux-amd64
-            dist/benchlib-agent-windows-amd64.exe
+            dist/benchlib-agent-macos-amd64
+            dist/benchlib-agent-macos-arm64
             dist/benchlib-agent-tray-windows-amd64.exe
 
   docker:
@@ -118,7 +133,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
